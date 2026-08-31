@@ -68,7 +68,44 @@ public class OrderService {
      * placeOrder 메소드의 시그니처는 변경하지 않은 채 구현하세요.
      */
     public Order placeOrder(String customerName, String customerEmail, List<Long> productIds, List<Integer> quantities) {
-        return null;
+        // Order 기본값 생성
+        Order order = Order.builder()
+            .customerName(customerName)
+            .customerEmail(customerEmail)
+            .status(Order.OrderStatus.PENDING)
+            .orderDate(LocalDateTime.now())
+            .item(new ArrayList<>())
+            .totalAmount(BigDecimal.ZERO)
+            .build();
+        BigDecimal totalAmount = BigDecimal.ZERO;
+
+        for(int i = 0; i < productIds.size(); i++) {
+            Long productId = productIds.get(i);
+            int quantity = quantities.get(i);
+
+            // 락걸린 조회 사용
+            Product product  = productRepository.findByIdWithLock(productId)
+                .orElseThrow(() -> new IllegalArgumentException("Product not found: " + productId));
+
+            // 재고감소
+            product.decreaseStock.(quantity);
+
+            // OrderItem 생성
+            OrderItem item = OrderItem.builder()
+                .order(order)
+                .product(product)
+                .quantity(quantity)
+                .price(product.getPrice)
+                .build();
+            order.getItems().add(item);
+
+            totalAmount = totalAmount.add(product.getPrice().multiply(BigDecimal.valueOF(quantity)));
+
+            order.setTotalAmount(totalAmount);
+
+        }
+        //order저장
+        return OrderRepository.save(order);
     }
 
     /**
