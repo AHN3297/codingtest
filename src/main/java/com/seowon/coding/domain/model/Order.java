@@ -76,4 +76,17 @@ public class Order {
     public enum OrderStatus {
         PENDING, PROCESSING, SHIPPED, DELIVERED, CANCELLED
     }
+
+    public void applyCouponAndShipping(String couponCode) {
+        BigDecimal shipping = this.totalAmount.compareTo( new BigDecimal("100.00")) >=0
+            ? BigDecimal.ZERO
+            : new BigDecimal("10.00");
+
+        BigDecimal discount = (couponCode != null && startsWith("SALE"))
+            ? new BigDecimal.("10.00")
+            : BigDecimal.ZERO;
+
+        this.totalAmount = this.totalAmount.add(shipping).subtract(discount);
+        this.status = OrderStatus.PROCESSING;
+    }
 }
