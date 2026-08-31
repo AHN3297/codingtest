@@ -2,6 +2,8 @@ package com.seowon.coding.controller;
 
 import com.seowon.coding.domain.model.Order;
 import com.seowon.coding.service.OrderService;
+
+import dto.CreateProductRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -67,4 +69,23 @@ public class OrderController {
      * }
      */
     //
+    @PostMapping
+    public ResponseEntity<Order> createOrder(@RequestBody CreateOrderRequest request) {
+        // 상품 아이디 목록, 수량 목록 분리해서 서비스 호출
+        List<Long> productIds = request.getProducts().stream()
+            .map(CreateOrderRequest.OrderProductDto::getProductId)
+            .toList();
+
+        List<Integer> quantities = request.getProducts().stream()
+            .map(CreateProductRequest.OrderProductDto::getQuantity)
+            .toList();
+        
+        Order createOrder = orderService.placeOrder(
+            request.getCustomerName(),
+            request.getCustomerEmail(),
+            productIds,
+            quantities
+        );
+        return ResponseEntity.status(HttpStatus.CREATED).body(createOrder);
+    }
 }
